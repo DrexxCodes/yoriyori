@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+        padding: 20px;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+    th, td {
+        padding: 10px;
+        border: 1px solid #ccc;
+    }
+    th {
+        background-color: #f2f2f2;
+    }
+    button {
+        padding: 5px 10px;
+        cursor: pointer;
+    }
+    .datepicker-popup {
+        position: absolute;
+        background-color: white;
+        border: 1px solid #ccc;
+        padding: 10px;
+        z-index: 1000;
+        display: none;
+    }
+</style>
+</head>
+<body>
+<div class="form-container">
+    <h1>Admin Dashboard</h1>
+    <table id="orders-table">
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Email</th>
+                <th>User Name</th>
+                <th>Address</th>
+                <th>Phone</th>
+                <th>Items Ordered</th>
+                <th>Quantities</th>
+                <th>Individual Prices</th>
+                <th>Grand Total</th>
+                <th>Discount Code</th>
+                <th>Status</th>
+                <th>Delivery Date</th>
+                <th>Additional Notes</th>
+            </tr>
+        </thead>
+        <tbody id="orders-body">
+            <!-- Orders will be loaded here -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script>
+    // Initialize Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyCkspIIUM-efZV11dn81hBIS5RdcjsNYYk",
+        authDomain: "contactform-c4a4e.firebaseapp.com",
+        databaseURL: "https://contactform-c4a4e-default-rtdb.firebaseio.com",
+        projectId: "contactform-c4a4e",
+        storageBucket: "contactform-c4a4e.appspot.com",
+        messagingSenderId: "486536765007",
+        appId: "1:486536765007:web:734d6d0b4638432087543a"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const rtdb = firebase.database();
+
+    // Load Orders
+    function loadOrders() {
+        rtdb.ref('orders').once('value').then(snapshot => {
+            const orders = [];
+            snapshot.forEach(userSnapshot => {
+                userSnapshot.forEach(orderSnapshot => {
+                    const order = orderSnapshot.val();
+                    const orderId = orderSnapshot.key;
+                    const userId = userSnapshot.key;
+                    
+                    // Check if order or items are undefined
+                    if (!order || !order.items) {
+                        console.error('Invalid order data:', order);
+                        return;
+                    }
+
+                    orders.push({ orderId, userId, order });
+                });
+            });
+
+            // Sort orders by date (assuming orders have a 'deliveryDate' field)
+            orders.sort((a, b) => new Date(a.order.deliveryDate) - new Date(b.order.deliveryDate));
+            
+            const ordersBody = document.getElementById('orders-body');
+            ordersBody.innerHTML = '';
+            
+            orders.forEach(({ orderId, userId, order }) => {
+                const row = document.createElement('tr');
+                const items = Object.values(order.items).map(item => item.name).join(', ');
+                const quantities = Object.values(order.items).map(item => item.quantity).join(', ');
+                const prices = Object.values(order.items).map(item => `$${(item.price * item.quantity).toFixed(2)}`).join(', ');
+                const grandTotal = Object.values(order.items).reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2);
+                
+                // Fetch user info from Firestore
+                db.collection('UserInfo').doc(userId).get().then(doc => {
+                    const userInfo = doc.data();
+                    const userName = userInfo ? userInfo.UserName : 'N/A'; // Fetch UserName from Firestore
+
+                    row.innerHTML = `
+                        <td>${orderId}</td>
+                        <td>${order.email}</td>
+                        <td>${userName}</td>
+                        <td>${order.address}</td>
+                        <td>${order.phone}</td>
+                        <td>${items}</td>
+                        <td>${quantities}</td>
+                        <td>${prices}</td>
+                        <td>$${grandTotal}</td>
+                        <td>${order.discountCode || 'N/A'}</td>
+                        <td><button class="status-button" data-order-id="${orderId}" data-user-id="${userId}">${order.status}</button></td>
+                        <td><input type="date" class="delivery-date" data-order-id="${orderId}" data-user-id="${userId}" value="${order.deliveryDate || ''}"></td>
+                        <td>${order.additionalNotes || ''}</td>
+                    `;
+                    ordersBody.appendChild(row);
+
+                    // Add event listeners for status buttons
+                    const statusButtons = document.querySelectorAll('.status-button');
+                    statusButtons.forEach(button => {
+                        button.addEventListener('click', () => {
+                            const orderId = button.getAttribute('data-order-id');
+                            const userId = button.getAttribute('data-user-id');
+                            showStatusPopup(orderId, userId);
+                        });
+                    });
+
+                    // Add event listeners for delivery date inputs
+                    const deliveryDateInputs = document.querySelectorAll('.delivery-date');
+                    deliveryDateInputs.forEach(input => {
+                        input.addEventListener('change', () => {
+                            const orderId = input.getAttribute('data-order-id');
+                            const userId = input.getAttribute('data-user-id');
+                            const newDeliveryDate = input.value;
+                            updateDeliveryDate(orderId, userId, newDeliveryDate);
+                        });
+                    });
+                }).catch(error => {
+                    console.error('Error fetching user info:', error);
+                });
+            });
+        }).catch(error => {
+            console.error('Error loading orders:', error);
+        });
+    }
+
+    function showStatusPopup(orderId, userId) {
+        const statusOptions = ['processing', 'waiting to be shipped', 'shipped', 'in transit', 'delivered'];
+        const popup = document.createElement('div');
+        popup.style.position = 'fixed';
+        popup.style.top = '50%';
+        popup.style.left = '50%';
+        popup.style.transform = 'translate(-50%, -50%)';
+        popup.style.padding = '20px';
+        popup.style.backgroundColor = 'white';
+        popup.style.border = '1px solid #ccc';
+        popup.style.zIndex = '1000';
+
+        const select = document.createElement('select');
+        statusOptions.forEach(status => {
+            const option = document.createElement('option');
+            option.value = status;
+            option.textContent = status;
+            select.appendChild(option);
+        });
+
+        const updateButton = document.createElement('button');
+        updateButton.textContent = 'Update Status';
+        updateButton.addEventListener('click', () => {
+            const newStatus = select.value;
+            updateOrderStatus(orderId, userId, newStatus);
+            document.body.removeChild(popup);
+        });
+
+        popup.appendChild(select);
+        popup.appendChild(updateButton);
+        document.body.appendChild(popup);
+    }
+
+    function updateOrderStatus(orderId, userId, newStatus) {
+        rtdb.ref(`orders/${userId}/${orderId}`).update({ status: newStatus }).then(() => {
+            console.log('Order status updated');
+        }).catch(error => {
+            console.error('Error updating status:', error);
+        });
+    }
+
+    function updateDeliveryDate(orderId, userId, newDeliveryDate) {
+        rtdb.ref(`orders/${userId}/${orderId}`).update({ deliveryDate: newDeliveryDate }).then(() => {
+            console.log('Delivery date updated');
+        }).catch(error => {
+            console.error('Error updating delivery date:', error);
+        });
+    }
+
+    // Load orders when the page loads
+    window.onload = loadOrders;
+</script>
+</body>
+</html>
+
+
+
+
+
+
+

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <title>Saved Items</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .product {
+            background-color: white;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            flex-grow: 1;
+        }
+        .product img {
+            max-width: 100%;
+            height: auto;
+        }
+        .product h2 {
+            margin: 10px 0;
+        }
+        .product p {
+            margin: 5px 0;
+        }
+        .fa-user, .fa-shopping-cart, .fa-bell {
+            color: blue;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+        }
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        .action-button {
+            background-color: purple;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            display: inline-flex;
+            align-items: center;
+        }
+        .action-button i {
+            margin-right: 5px;
+        }
+        .delete-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            color: red;
+        }
+        @media (min-width: 768px) {
+            .product {
+                flex-direction: row;
+                align-items: center;
+            }
+            .product img {
+                max-width: 200px;
+                margin-right: 20px;
+            }
+            .product-details {
+                flex-grow: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Saved Items</h1>
+        <nav>
+            <a href="notifications.html"><i class="fas fa-bell"></i></a>
+            <a href="cart.html"><i class="fas fa-shopping-cart"></i></a>
+            <div class="dropdown">
+                <i class="fas fa-user"></i>
+                <div class="dropdown-content">
+                    <a href="dash.html">My Profile</a>
+                    <a href="orderHistory.html">My Orders</a>
+                </div>
+            </div>
+        </nav>
+    </div>
+    <div id="saved-items-container"></div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCkspIIUM-efZV11dn81hBIS5RdcjsNYYk",
+            authDomain: "contactform-c4a4e.firebaseapp.com",
+            databaseURL: "https://contactform-c4a4e-default-rtdb.firebaseio.com",
+            projectId: "contactform-c4a4e",
+            storageBucket: "contactform-c4a4e.appspot.com",
+            messagingSenderId: "486536765007",
+            appId: "1:486536765007:web:734d6d0b4638432087543a"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // Check if user is logged in
+        auth.onAuthStateChanged(user => {
+            if (!user) {
+                window.location.href = 'login.html';
+            } else {
+                fetchSavedItems();
+            }
+        });
+
+        function fetchSavedItems() {
+            const savedItemsContainer = document.getElementById('saved-items-container');
+            const user = auth.currentUser;
+            db.collection('savedItems').doc(user.uid).get().then(doc => {
+                if (doc.exists) {
+                    const items = doc.data().items || [];
+                    savedItemsContainer.innerHTML = ''; // Clear previous items
+                    items.forEach(item => {
+                        const itemElement = document.createElement('div');
+                        itemElement.classList.add('product');
+                        itemElement.innerHTML = `
+                            <i class="fas fa-trash delete-icon" onclick="deleteItem('${item.productId}')"></i>
+                            <img src="${item.image}" alt="${item.name}">
+                            <div class="product-details">
+                                <h2>${item.name}</h2>
+                                <p><strong>$${item.price}</strong></p>
+                                <button class="action-button" onclick="addToCart('${item.productId}', '${item.name}', '${item.image}', ${item.price})">
+                                    <i></i>Add to Cart
+                                </button>
+                                <button class="action-button" onclick="window.open('https://example.com/reviews/${item.productId}', '_blank')">View Reviews</button>
+                            </div>
+                        `;
+                        savedItemsContainer.appendChild(itemElement);
+                    });
+                } else {
+                    savedItemsContainer.innerHTML = '<p>No saved items found.</p>';
+                }
+            }).catch(error => {
+                console.error("Error fetching saved items:", error);
+            });
+        }
+
+        function addToCart(productId, name, image, price) {
+            const user = auth.currentUser;
+            if (user) {
+                db.collection('carts').doc(user.uid).set({
+                    products: firebase.firestore.FieldValue.arrayUnion({ productId, name, image, price })
+                }, { merge: true }).then(() => {
+                    alert("Product added to cart successfully!");
+                    console.log("Product added to cart:", { productId, name, image, price });
+                }).catch(error => {
+                    console.error("Error adding product to cart:", error);
+                });
+            } else {
+                window.location.href = 'login.html';
+            }
+        }
+
+        function deleteItem(productId) {
+            const user = auth.currentUser;
+            if (user) {
+                db.collection('savedItems').doc(user.uid).get().then(doc => {
+                    if (doc.exists) {
+                        const items = doc.data().items.filter(item => item.productId !== productId);
+                        db.collection('savedItems').doc(user.uid).set({ items }).then(() => {
+                            alert("Item deleted successfully!");
+                            fetchSavedItems(); // Refresh the list
+                        }).catch(error => {
+                            console.error("Error deleting item:", error);
+                        });
+                    }
+                }).catch(error => {
+                    console.error("Error fetching saved items:", error);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
+

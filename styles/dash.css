@@ -1,0 +1,79 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    padding: 20px;
+}
+
+.form-container {
+    background-color: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    align-items: center;
+}
+
+.form-container label {
+    display: block;
+    margin: 10px 0 5px;
+}
+
+.form-container input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.form-container button {
+    margin: 10px 5px 0 0;
+}
+
+/* Buttons */
+
+#update {
+    background-color: purple;
+    color: white;
+    border: none;
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#logout {
+    min-width: 70%;
+    position: absolute;
+    bottom: 3%;
+    align-items: center;
+    text-align: center;
+    left: 20%;
+    padding: 10px;
+    background: rgb(206, 57, 57);
+    color: white;
+}
+
+#logout:hover {
+    background-color: red;
+    transition: ease-in .5s;
+    scale: 1.1;
+}
+
+.UserID {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 12px;
+    align-items: center;
+    justify-items: center;
+    color:#7a7777
+}
+
+/* button {
+    background-color: purple;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+} */

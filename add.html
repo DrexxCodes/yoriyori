@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles/add.css">
+    <title>Add and Modify Product</title>
+</head>
+<body>
+    <!-- Add Products starts -->
+    <div class="form-container">
+        <h1>Add Product</h1>
+        <form id="add-product-form">
+            <label for="name">Product Name</label>
+            <input type="text" id="name" required>
+            <label for="price">Price</label>
+            <input type="number" id="price" required>
+            <label for="description">Description</label>
+            <textarea id="description" required></textarea>
+            <label for="image">Image URL</label>
+            <input type="text" id="image" required>
+            <label for="category">Category</label>
+            <select id="category" required>
+                <option value="Electronics">Electronics</option>
+                <option value="Fashion">Fashion</option>
+                <option value="Books">Books</option>
+            </select>
+            <label for="reviewUrl">Review URL</label>
+            <input type="text" id="reviewUrl" required>
+            <button type="submit">Add Product</button>
+        </form>
+    </div>
+    <!-- Add Products end -->
+
+   <!-- Add Discounts Start -->
+    <div class="form-container">
+        <h1>Discounts</h1>
+        <form id="add-discount-form">
+            <label for="discount-code">Discount Code</label>
+            <input type="text" id="discount-code" required>
+            <label for="discount-percentage">Discount Percentage</label>
+            <input type="number" id="discount-percentage" required>
+            <button type="submit">Add Discount</button>
+        </form>
+    </div>
+    <!-- Add Discounts End -->
+
+    <!-- Modify Products Start -->
+    <div class="form-container">
+        <h1>Modify Product</h1>
+        <form id="fetch-product-form">
+            <label for="productId">Enter Product ID</label>
+            <input type="text" id="productId" required>
+            <button type="button" onclick="fetchProduct()">Fetch Product</button>
+        </form>
+        <div id="modify-product-container" style="display: none;">
+            <form id="modify-product-form">
+                <label for="modify-name">Product Name</label>
+                <textarea id="modify-name" required></textarea>
+                <label for="modify-price">Price</label>
+                <input type="number" id="modify-price" required>
+                <label for="modify-description">Description</label>
+                <textarea id="modify-description" required></textarea>
+                <label for="modify-image">Image URL</label>
+                <input type="text" id="modify-image" required>
+                <label for="modify-category">Category</label>
+                <select id="modify-category" required>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Fashion">Fashion</option>
+                    <option value="Books">Books</option>
+                </select>
+                <label for="modify-reviewUrl">Review URL</label>
+                <input type="text" id="modify-reviewUrl" required>
+                <button type="submit">Modify Product</button>
+            </form>
+        </div>
+    </div>
+    <!-- Modify Products End -->
+
+        <!-- JQuery -->
+        <script src="scripts/jquery.min.js"></script>
+
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="scripts/Firebase.js"></script>
+
+         <!-- Customed JS -->
+    <script src="scripts/add.js"></script>
+</body>
+</html>
+

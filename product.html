@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details</title>
+    <link rel="stylesheet" href="styles/product.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+
+
+
+</head>
+
+<body>
+
+    <!-- Header Section -->
+    <header>
+        <i class='bx bx-arrow-back' onclick="history.back()" style="cursor: pointer; font-size: 1.5rem;"></i>
+        <h2>Product Details</h2>
+        <div class="cart-container" onclick="window.location.href='cart.html'">
+            <i class='bx bx-cart'></i>
+            <span id="cart-count" class="cart-badge">0</span>
+        </div>
+    </header>
+
+
+    <div id="product-details" style="display: flex; gap: 20px; align-items: center; margin: 40px;">
+        <!-- Product Image -->
+        <img id="product-image" src="" alt="Product Image" style="width: 300px; height: auto; border-radius: 8px;">
+
+        <!-- Product Info -->
+        <div>
+            <h1 id="product-name"></h1>
+            <p id="product-price" style="font-size: 1.5rem; font-weight: bold;"></p>
+            <p id="product-description"></p>
+
+            <!-- Buttons for Save and Add to Cart -->
+            <button onclick="addToCart()" class="action-button">
+                <i class='bx bx-cart-add'></i> Add to Cart
+            </button>
+            <button onclick="saveItem()" class="action-button">
+                <i class='bx bx-bookmark'></i> Save Product
+            </button>
+
+            <!-- Comment Input Section -->
+            <div style="margin-top: 20px;">
+                <textarea id="comment-input" placeholder="Leave a comment..." rows="3"></textarea>
+                <button onclick="submitComment()" class="action-button">Submit Comment</button>
+            </div>
+
+            <!-- Comments Section -->
+            <div id="comments-section">
+                <h3>Comments</h3>
+                <div id="comments-container"></div>
+            </div>
+        </div>
+
+        <!-- Related Products -->
+        <div id="related-products" style="margin-top: 40px;">
+            <h3>Related Products</h3>
+            <div id="related-products-container" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
+        </div>
+    </div>
+    </div>
+    <script src="scripts/Firebase.js"></script>
+
+    <script src="scripts/product.js"></script>
+
+
+</body>
+
+</html>

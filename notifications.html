@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="styles/notifications.css">
+    <title>Notifications</title>
+
+</head>
+<body>
+    <header>
+        <div class="header">
+            <i class='bx bx-arrow-back' onclick="history.back()" style="cursor: pointer; font-size: 1.5rem;"></i>
+            <h1>Notifications</h1>
+            <nav class="nav-icons">
+                    <a href="index.html"><i class='fa fa-home'></i></a>
+                    <!-- <div class="notification-count" id="notification-count">0</div> -->
+                    <a href="cart.html"><i class="fas fa-shopping-cart"></i></a>
+                    <!-- <div class="cart-count" id="cart-count">0</div></di -->
+                <div class="dropdown">
+                    <i class="fas fa-user"></i>
+                    <div class="dropdown-content">
+                        <a href="dash.html">My Profile</a>
+                        <a href="orderHistory.html">My Orders</a>
+                        <a href="savedItems.html">Saved Items</a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+    <div id="notifications-container"></div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script src="scripts/Firebase.js"></script>
+    <script src="scripts/notifications.js"></script>
+
+</body>
+</html>

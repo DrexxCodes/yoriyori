@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="styles/preloader.css">
+    <link rel="stylesheet" href="styles/checkout.css">
+    <title>Checkout</title>
+</head>
+
+<body>
+    <!-- Preloader -->
+    <div id="preloader">
+        <div id="status">&nbsp;</div>
+    </div>
+    <div class="header">
+        <h1>Checkout</h1>
+        <nav class="nav-icons">
+            <div class="icon-wrapper">
+                <a href="notifications.html"><i class="fas fa-bell"></i></a>
+                <div class="notification-count" id="notification-count">0</div>
+            </div>
+
+            <div class="icon-wrapper">
+                <a href="cart.html"><i class="fas fa-shopping-cart"></i></a>
+                <div class="cart-count" id="cart-count">0</div></div>
+            <div class="dropdown">
+                <i class="fas fa-user"></i>
+                <div class="dropdown-content">
+                    <a href="dash.html">My Profile</a>
+                    <a href="orderHistory.html">My Orders</a>
+                    <a href="savedItems.html">Saved Items</a>
+                </div>
+            </div>
+        </nav>
+    </div>
+    <div class="notice">
+        <Marquee scrollamount="3">Total Price is without delivery fees</Marquee>
+    </div>
+    <div class="form-container">
+        <div class="order-details">
+            <h1>Checkout</h1>
+            <div id="ordered-items"></div>
+            <div class="total" id="total-price"></div>
+        </div>
+        <div class="user-info">
+            <form id="checkout-form">
+                <h2>User Information</h2>
+                <label for="email">Email</label>
+                <input type="email" placeholder="Loading Email..." id="email" required readonly>
+                <label for="phone">Phone Number</label>
+                <input type="tel" placeholder="Loading Phone Number..." id="phone" required readonly>
+                <label for="address">Address</label>
+                <textarea placeholder="Loading Address..." id="address" required readonly></textarea>
+                <label for="additional-notes">Additional Notes</label>
+                <textarea id="additional-notes" placeholder="Enter any additional notes here..."></textarea>
+                <div class="discount-container">
+                    <input type="text" id="discount-code" placeholder="Enter discount code">
+                    <button type="button" onclick="applyDiscount()">Apply</button>
+                </div>
+                <button type="submit" class="place-order">
+                    <i class="place-order-icon">🚚</i>Place Order
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- JQuery -->
+    <script src="scripts/jquery.min.js"></script>
+
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="scripts/Firebase.js"></script>
+
+    <!-- PreloaderJS -->
+    <script src="scripts/preload.js"></script>
+
+    <!-- Customed JS -->
+    <script src="scripts/checkout.js"></script>
+
+    </script>
+</body>
+
+</html>

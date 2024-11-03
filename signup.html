@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign Up</title>
+<style>
+    body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        font-family: Arial, sans-serif;
+    }
+    #auth-container {
+        text-align: center;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        padding: 20px;
+        width: 300px;
+    }
+    input {
+        width: 100%;
+        margin-bottom: 10px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+    button {
+        width: 100%;
+        background-color: blue;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+    .error-message {
+        color: red;
+    }
+</style>
+</head>
+<body>
+<div id="auth-container">
+    <h2>Sign Up</h2>
+    <input type="text" id="username" placeholder="Username">
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <input type="text" id="phone" placeholder="Phone number">
+    <div id="recaptcha-container"></div>
+    <button onclick="signUp()">Sign Up</button>
+    <button onclick="signUpWithGoogle()">Sign Up with Google</button>
+    <div id="error-message" class="error-message"></div>
+    <p>Already have an account? <a href="login.html">Login</a></p>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script>
+    // Initialize Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyCkspIIUM-efZV11dn81hBIS5RdcjsNYYk",
+        authDomain: "contactform-c4a4e.firebaseapp.com",
+        databaseURL: "https://contactform-c4a4e-default-rtdb.firebaseio.com",
+        projectId: "contactform-c4a4e",
+        storageBucket: "contactform-c4a4e.appspot.com",
+        messagingSenderId: "486536765007",
+        appId: "1:486536765007:web:734d6d0b4638432087543a"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    const auth = firebase.auth();
+    const database = firebase.database();
+
+    // Function to sign up with email and password
+    function signUp() {
+        const username = document.getElementById('username').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const phone = document.getElementById('phone').value;
+
+        auth.createUserWithEmailAndPassword(email, password)
+            .then(userCredential => {
+                const user = userCredential.user;
+                return user.updateProfile({
+                    displayName: username
+                }).then(() => {
+                    user.sendEmailVerification().then(() => {
+                        alert('Verification email sent. Please check your inbox.');
+                        window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container');
+                        const appVerifier = window.recaptchaVerifier;
+                        auth.signInWithPhoneNumber(phone, appVerifier)
+                            .then(confirmationResult => {
+                                const code = prompt('Enter the verification code sent to your phone');
+                                return confirmationResult.confirm(code).then(() => {
+                                    alert('Phone number verified!');
+                                    window.location.href = "login.html";
+                                });
+                            })
+                            .catch(error => {
+                                document.getElementById('error-message').innerText = error.message;
+                            });
+                    });
+                });
+            })
+            .catch(error => {
+                document.getElementById('error-message').innerText = error.message;
+            });
+    }
+
+    function signUpWithGoogle() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider)
+            .then(result => {
+                const user = result.user;
+                if (!user.emailVerified) {
+                    user.sendEmailVerification().then(() => {
+                        alert('Verification email sent. Please check your inbox.');
+                        window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container');
+                        const appVerifier = window.recaptchaVerifier;
+                        const phone = prompt('Enter your phone number for verification');
+                        auth.signInWithPhoneNumber(phone, appVerifier)
+                            .then(confirmationResult => {
+                                const code = prompt('Enter the verification code sent to your phone');
+                                return confirmationResult.confirm(code).then(() => {
+                                    alert('Phone number verified!');
+                                    window.location.href = "index.html";
+                                });
+                            })
+                            .catch(error => {
+                                document.getElementById('error-message').innerText = error.message;
+                            });
+                    });
+                } else {
+                    window.location.href = "index.html";
+                }
+            })
+            .catch(error => {
+                document.getElementById('error-message').innerText = error.message;
+            });
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles/preloader.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="styles/store.css">
+    <title>Store</title>
+</head>
+
+<body>
+    <!-- Preloader -->
+    <div id="preloader">
+        <div id="status">&nbsp;</div>
+    </div>
+    <div class="header">
+        <h1>Yori Yori Stores</h1>
+        <nav class="nav-icons">
+            <div class="icon-wrapper">
+                <a href="notifications.html"><i class="fas fa-bell"></i></a>
+                <div class="notification-count" id="notification-count">0</div>
+            </div>
+
+            <div class="icon-wrapper">
+                <a href="cart.html"><i class="fas fa-shopping-cart"></i></a>
+                <div class="cart-count" id="cart-count">0</div></div>
+            <div class="dropdown">
+                <i class="fas fa-user"></i>
+                <div class="dropdown-content">
+                    <a href="dash.html">My Profile</a>
+                    <a href="orderHistory.html">My Orders</a>
+                    <a href="savedItems.html">Saved Items</a>
+                </div>
+            </div>
+        </nav>
+    </div>
+    <div id="message"></div>
+    <div class="search-bar">
+        <input type="text" id="search-input" placeholder="Search for products...">
+        <select id="category-filter">
+            <option value="">All Categories</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Fashion">Fashion</option>
+            <option value="Books">Books</option>
+        </select>
+        <button onclick="searchProducts()">Search</button>
+    </div>
+    <div id="products-container"></div>
+
+    <footer>
+        <p>Powered by <a href="https://drexx.vercel.app">Drexx Codes</a></p>
+    </footer>
+    <!-- JQuery -->
+    <script src="scripts/jquery.min.js"></script>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="scripts/Firebase.js"></script>
+
+    <!-- PreloaderJS -->
+    <script src="scripts/preload.js"></script>
+
+    <!-- Customed JS -->
+    <script src="scripts/store.js"></script>
+</body>
+
+</html>

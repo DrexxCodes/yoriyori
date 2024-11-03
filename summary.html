@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Order Summary</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+        padding: 20px;
+    }
+    .order-summary {
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .order-summary h1 {
+        margin-bottom: 20px;
+    }
+    .product {
+        background-color: white;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .product img {
+        max-width: 100px;
+    }
+    .product h2 {
+        margin: 10px 0;
+    }
+    .product p {
+        margin: 5px 0;
+    }
+    .product-price {
+        font-weight: bold;
+    }
+    .total {
+        font-size: 1.5em;
+        font-weight: bold;
+        margin-top: 20px;
+    }
+    .order-id {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+    .additional-notes, .order-time {
+        margin-top: 20px;
+    }
+
+    .payment-container {
+        background-color: #e8f5e9;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+        margin-top: 20px;
+    }
+    .payment-container p {
+        font-size: 1.1em;
+        margin-bottom: 10px;
+    }
+
+    .continue-shopping {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        font-size: 16px;
+    }
+    .continue-shopping i {
+        margin-right: 10px;
+    }
+
+    .whatsapp-button {
+        display: inline-flex;
+        align-items: center;
+        padding: 10px 20px;
+        background-color: #25d366;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        text-decoration: none;
+    }
+    .whatsapp-button i {
+        margin-right: 10px;
+        font-size: 1.2em;
+    }
+</style>
+</head>
+<body>
+<div class="order-summary">
+    <h1>Order Summary</h1>
+    <div id="order-details"></div>
+    <div class="total" id="total-price"></div>
+    <div class="additional-notes" id="additional-notes"></div>
+    <div class="order-time" id="order-time"></div>
+    <div class="order-id" id="order-id"></div>
+    <a href="store.html" class="continue-shopping"><i class="fas fa-shopping-cart"></i>Continue Shopping</a>
+</div>
+
+<!-- Payment Container -->
+<div class="payment-container">
+    <p>Click the button below to complete payment</p>
+    <button class="whatsapp-button" id="whatsapp-button">
+        <i class="fab fa-whatsapp"></i>Complete Payment on WhatsApp
+    </button>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script>
+    // Initialize Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyCkspIIUM-efZV11dn81hBIS5RdcjsNYYk",
+        authDomain: "contactform-c4a4e.firebaseapp.com",
+        databaseURL: "https://contactform-c4a4e-default-rtdb.firebaseio.com",
+        projectId: "contactform-c4a4e",
+        storageBucket: "contactform-c4a4e.appspot.com",
+        messagingSenderId: "486536765007",
+        appId: "1:486536765007:web:734d6d0b4638432087543a"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const rtdb = firebase.database();
+
+    // Check if user is logged in
+    auth.onAuthStateChanged(user => {
+        if (!user) {
+            window.location.href = 'login.html';
+        } else {
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('orderId');
+            document.getElementById('order-id').textContent = `Order ID: ${orderId}`;
+            loadOrderDetails(orderId);
+        }
+    });
+
+    function loadOrderDetails(orderId) {
+        const orderDetails = document.getElementById('order-details');
+        const totalPriceElement = document.getElementById('total-price');
+        const additionalNotesElement = document.getElementById('additional-notes');
+        const orderTimeElement = document.getElementById('order-time');
+        const whatsappButton = document.getElementById('whatsapp-button');
+        let userName = '';
+        let total = 0;
+
+        auth.currentUser?.reload().then(() => {
+            userName = auth.currentUser.displayName || 'Customer';
+        });
+
+        rtdb.ref('orders/' + orderId).get().then(snapshot => {
+            const data = snapshot.val();
+            let total = 0;
+            if (data) {
+                additionalNotesElement.textContent = `Additional Notes: ${data.notes || 'None'}`;
+                const orderDate = new Date(data.date);
+                orderTimeElement.textContent = `Order Placed: ${orderDate.toLocaleDateString()} at ${orderDate.toLocaleTimeString()}`;
+                if (data.items) {
+                    data.items.forEach(product => {
+                        const productElement = document.createElement('div');
+                        productElement.classList.add('product');
+                        const totalProductPrice = product.price * product.quantity;
+                        productElement.innerHTML = `
+                            <img src="${product.image}" alt="${product.name}">
+                            <div>
+                                <h2>${product.name}</h2>
+                                <p>Quantity: ${product.quantity}</p>
+                                <p class="product-price">Total Price: $${totalProductPrice.toFixed(2)}</p>
+                            </div>
+                        `;
+                        orderDetails.appendChild(productElement);
+                        total += totalProductPrice;
+                    });
+                    totalPriceElement.textContent = `Total: $${total.toFixed(2)}`;
+                }
+                // Configure WhatsApp button to send message
+                whatsappButton.onclick = () => {
+                    const phoneNumber = "+2348123927685";
+                    const message = `Hello Yori Stores, I am ${userName} and I have completed an order with Order ID: ${orderId}.`;
+                    const encodedMessage = encodeURIComponent(message);
+                    window.location.href = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+                };
+            }
+        });
+    }
+</script>
+</body>
+</html>
+
+
+

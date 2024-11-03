@@ -1,0 +1,21 @@
+#preloader {
+    background: rgb(208, 163, 212);
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999999;
+}
+
+#status {
+    background-image: url("../preloader/TechNinjaPreloader.gif");
+    background-repeat: no-repeat;
+    width: 100px;
+    height: 100px;
+    position: absolute;
+    left: 50%;
+    margin-left: -50px;
+    top: 50%;
+    margin-top: -50px;
+}

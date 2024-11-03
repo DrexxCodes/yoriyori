@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .header .back-button {
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+        .product {
+            background-color: white;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+        .product img {
+            max-width: 100px;
+        }
+        .product h2 {
+            margin: 10px 0;
+        }
+        .product p {
+            margin: 5px 0;
+        }
+        .product-price {
+            font-weight: bold;
+        }
+        .delete-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            color: red;
+        }
+        .total {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .checkout-button {
+            background-color: purple;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        .checkout-button i {
+            margin-left: 10px;
+        }
+        .just-for-you {
+            margin-top: 40px;
+        }
+        .just-for-you h2 {
+            margin-bottom: 20px;
+        }
+        .just-for-you .slider {
+            display: flex;
+            overflow-x: scroll;
+            padding-bottom: 10px;
+        }
+        .just-for-you .product {
+            flex: 0 0 auto;
+            width: 200px;
+            margin-right: 10px;
+        }
+        .action-button {
+            background-color: purple;
+            color: white;
+            border: none;
+            padding: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            margin-top: 10px;
+            width: 100%;
+            justify-content: center;
+        }
+        .action-button i {
+            margin-right: 5px;
+        }
+        .save-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <span class="back-button" onclick="goBack()">&#8592;</span>
+        <h1>Cart</h1>
+        <button class="checkout-button" onclick="checkout()">Checkout <i class="fas fa-arrow-circle-right"></i></button>
+    </div>
+    <div id="cart-container"></div>
+    <div class="total" id="total-price"></div>
+
+    <div class="just-for-you">
+        <h2>Just for you</h2>
+        <div class="slider" id="recommended-container"></div>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCkspIIUM-efZV11dn81hBIS5RdcjsNYYk",
+            authDomain: "contactform-c4a4e.firebaseapp.com",
+            databaseURL: "https://contactform-c4a4e-default-rtdb.firebaseio.com",
+            projectId: "contactform-c4a4e",
+            storageBucket: "contactform-c4a4e.appspot.com",
+            messagingSenderId: "486536765007",
+            appId: "1:486536765007:web:734d6d0b4638432087543a"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const rtdb = firebase.database();
+
+        // Check if user is logged in
+        auth.onAuthStateChanged(user => {
+            if (!user) {
+                window.location.href = 'login.html';
+            } else {
+                loadCart(user.uid);
+                loadRecommendedProducts();
+            }
+        });
+
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+
+        function loadCart(userId) {
+            const cartContainer = document.getElementById('cart-container');
+            const totalPriceElement = document.getElementById('total-price');
+            db.collection('carts').doc(userId).get().then(doc => {
+                const data = doc.data();
+                let total = 0;
+                if (data && data.products) {
+                    cartContainer.innerHTML = ''; // Clear previous items
+                    data.products.forEach(product => {
+                        const productElement = document.createElement('div');
+                        productElement.classList.add('product');
+                        productElement.innerHTML = `
+                            <img src="${product.image}" alt="${product.name}">
+                            <div>
+                                <h2>${product.name}</h2>
+                                <p class="product-price">₦${product.price}</p>
+                            </div>
+                            <i class="fas fa-trash delete-icon" onclick="deleteItem('${product.productId}')"></i>
+                        `;
+                        cartContainer.appendChild(productElement);
+                        total += product.price;
+                    });
+                    totalPriceElement.textContent = `Total: ₦${total.toFixed(2)}`;
+                }
+            }).catch(error => {
+                console.error("Error loading cart:", error);
+            });
+        }
+
+        function deleteItem(productId) {
+            const user = auth.currentUser;
+            if (user) {
+                db.collection('carts').doc(user.uid).get().then(doc => {
+                    if (doc.exists) {
+                        const updatedProducts = doc.data().products.filter(product => product.productId !== productId);
+                        db.collection('carts').doc(user.uid).set({ products: updatedProducts }, { merge: true }).then(() => {
+                            alert("Item removed from cart.");
+                            loadCart(user.uid);
+                        }).catch(error => {
+                            console.error("Error removing item from cart:", error);
+                        });
+                    }
+                }).catch(error => {
+                    console.error("Error fetching cart:", error);
+                });
+            }
+        }
+
+        function checkout() {
+            window.location.href = 'checkout.html';
+        }
+
+        function loadRecommendedProducts() {
+            const recommendedContainer = document.getElementById('recommended-container');
+            db.collection('products').get().then(querySnapshot => {
+                const allProducts = [];
+                querySnapshot.forEach(doc => {
+                    allProducts.push(doc.data());
+                });
+
+                const selectedProducts = [];
+                while (selectedProducts.length < 6 && allProducts.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * allProducts.length);
+                    selectedProducts.push(allProducts.splice(randomIndex, 1)[0]);
+                }
+
+                recommendedContainer.innerHTML = ''; // Clear previous items
+                selectedProducts.forEach(product => {
+                    const productElement = document.createElement('div');
+                    productElement.classList.add('product');
+                    productElement.innerHTML = `
+                        <img src="${product.image}" alt="${product.name}">
+                        <div class="product-details">
+                            <h2>${product.name}</h2>
+                            <p class="product-price">$${product.price}</p>
+                            <button class="action-button" onclick="addToCart('${product.productId}', '${product.name}', '${product.image}', ${product.price})">
+                                <i class="fas fa-cart-plus"></i>Add to Cart
+                            </button>
+                            <button class="action-button" onclick="window.open('${product.reviewUrl}', '_blank')">
+                                <i class="fas fa-star"></i>Reviews
+                            </button>
+                        </div>
+                        <i class="fas fa-heart save-icon" onclick="saveItem('${product.productId}', '${product.name}', '${product.image}', ${product.price})"></i>
+                    `;
+                    recommendedContainer.appendChild(productElement);
+                });
+            }).catch(error => {
+                console.error("Error loading recommended products:", error);
+            });
+        }
+
+        function addToCart(productId, name, image, price) {
+            const user = auth.currentUser;
+            if (user) {
+                db.collection('carts').doc(user.uid).set({
+                    products: firebase.firestore.FieldValue.arrayUnion({ productId, name, image, price })
+                }, { merge: true }).then(() => {
+                    alert("Product added to cart.");
+                }).catch(error => {
+                    console.error("Error adding product to cart:", error);
+                });
+            } else {
+                window.location.href = 'login.html';
+            }
+        }
+
+        function saveItem(productId, name, image, price) {
+            const user = auth.currentUser;
+            if (user) {
+                db.collection('savedItems').doc(user.uid).set({
+                    items: firebase.firestore.FieldValue.arrayUnion({ productId, name, image, price })
+                }, { merge: true }).then(() => {
+                    alert("Product saved.");
+                }).catch(error => {
+                    console.error("Error saving product:", error);
+                });
+            } else {
+                window.location.href = 'login.html';
+            }
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Order</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+
+        .form-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .form-container label,
+        .form-container input {
+            display: block;
+            margin: 10px 0;
+        }
+
+        .form-container input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        #trackBtn {
+            background-color: purple;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .order-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .order-details {
+            margin-top: 20px;
+        }
+
+        .order-item {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .order-item img {
+            max-width: 50px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="form-container">
+        <h1>Track Order</h1>
+        <form id="track-order-form">
+            <label for="order-id">Order ID</label>
+            <input type="text" id="order-id" required>
+            <button type="submit" id="trackBtn">Track Order</button>
+        </form>
+    </div>
+    <div class="order-container" id="order-container" style="display: none;">
+        <h2>Order Details</h2>
+        <div id="order-details"></div>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCkspIIUM-efZV11dn81hBIS5RdcjsNYYk",
+            authDomain: "contactform-c4a4e.firebaseapp.com",
+            databaseURL: "https://contactform-c4a4e-default-rtdb.firebaseio.com",
+            projectId: "contactform-c4a4e",
+            storageBucket: "contactform-c4a4e.appspot.com",
+            messagingSenderId: "486536765007",
+            appId: "1:486536765007:web:734d6d0b4638432087543a"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const rtdb = firebase.database();
+
+        document.getElementById('track-order-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const orderId = document.getElementById('order-id').value;
+            trackOrder(orderId);
+        });
+
+        function trackOrder(orderId) {
+            rtdb.ref('orders').once('value').then(snapshot => {
+                let orderFound = false;
+                snapshot.forEach(userSnapshot => {
+                    if (orderFound) return;
+
+                    userSnapshot.forEach(orderSnapshot => {
+                        if (orderSnapshot.key === orderId) {
+                            const orderData = orderSnapshot.val();
+                            displayOrderDetails(orderId, orderData);
+                            orderFound = true;
+                        }
+                    });
+                });
+
+                if (!orderFound) {
+                    alert('Order not found');
+                }
+            }).catch(error => {
+                console.error('Error tracking order: ', error);
+            });
+        }
+
+        function displayOrderDetails(orderId, orderData) {
+            const orderContainer = document.getElementById('order-container');
+            const orderDetails = document.getElementById('order-details');
+            orderContainer.style.display = 'block';
+            orderDetails.innerHTML = `
+            <p><strong>Order ID:</strong> ${orderId}</p>
+            <p><strong>Status:</strong> ${orderData.status}</p>
+            <p><strong>Email:</strong> ${orderData.email}</p>
+            <p><strong>Phone:</strong> ${orderData.phone}</p>
+            <p><strong>Address:</strong> ${orderData.address}</p>
+            <h3>Items:</h3>
+        `;
+
+            if (orderData.discountCode) {
+                orderDetails.innerHTML += `
+                <p><strong>Discount Code:</strong> ${orderData.discountCode}</p>
+                <p><strong>Discounted Total:</strong> $${orderData.totalPrice}</p>
+            `;
+            }
+
+            Object.values(orderData.items).forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.classList.add('order-item');
+                itemElement.innerHTML = `
+                <img src="${item.image}" alt="${item.name}">
+                <div>
+                    <p><strong>Name:</strong> ${item.name}</p>
+                    <p><strong>Price:</strong> $${item.price}</p>
+                </div>
+            `;
+                orderDetails.appendChild(itemElement);
+            });
+        }
+    </script>
+</body>
+
+</html>

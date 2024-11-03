@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="styles/preloader.css">
+<link rel="stylesheet" href="styles/cancel.css">
+<title>Cancel Order</title>
+</head>
+<body>
+        <!-- Preloader -->
+        <div id="preloader">
+            <div id="status">&nbsp;</div>
+        </div>
+<div class="form-container">
+    <h1>Cancel Order</h1>
+    <form id="cancel-form">
+        <label for="order-id">Order ID</label>
+        <input type="text" id="order-id" required>
+        <button type="button" id="check-order-id">Check</button>
+        <div id="order-details" class="hidden">
+            <h2>Order Details</h2>
+            <div id="items-list"></div>
+            <label for="cancel-quantity" id="cancel-quantity-label" class="hidden">How many items do you wish to cancel?</label>
+            <select id="cancel-quantity" class="hidden">
+                <option value="">Select number of items</option>
+            </select>
+            <div id="item-checklist" class="hidden">
+                <label>Select the items you wish to cancel</label>
+                <div id="item-options"></div>
+            </div>
+            <label for="cancel-reason" id="cancel-reason-label" class="hidden">Why do you wish to cancel?</label>
+            <textarea id="cancel-reason" class="hidden" required></textarea>
+            <button type="submit" id="submit-cancel" class="hidden" disabled>Submit</button>
+        </div>
+    </form>
+</div>
+
+    <!-- JQuery -->
+    <script src="scripts/jquery.min.js"></script>
+
+    <!-- PreloaderJS -->
+    <script src="scripts/preload.js"></script>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="scripts/Firebase.js"></script>
+
+<!-- Customed JS -->
+<script src="scripts/cancel.js"></script>
+
+</body>
+</html>
+
+
+
+
+
+

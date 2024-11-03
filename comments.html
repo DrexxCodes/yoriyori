@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comment Section</title>
+<style>
+    #greeting {
+    text-align: left;
+    font-size: 14px;
+    margin-bottom: 20px;
+    }
+    #comment-section {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    }
+    #email-input, #comment-input {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    }
+    #post-comment-btn {
+    background-color: blue;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    }
+    .comment {
+    background-color: #f0f8ff;
+    border: 1px solid #87CEEB;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 10px;
+    }
+    .comment p {
+    margin: 5px 0;
+    }
+    #error-message {
+    display: none;
+    color: red;
+    margin-top: 10px;
+    }
+    #success-message {
+    display: none;
+    color: green;
+    margin-top: 10px;
+    }
+    #login-section {
+    text-align: center;
+    margin-bottom: 20px;
+    }
+    #login-btn, #logout-btn {
+    background-color: green;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin: 5px;
+    }
+</style>
+</head>
+<body>
+<div id="greeting"></div>
+
+<div id="comments-container"></div>
+<br><br>
+<div id="comment-section">
+    <marquee style="color: white; background:black;">Your email will not be made public.</marquee>
+    <div id="login-section">
+        <button id="login-btn" onclick="redirectToLogin()">Login</button>
+        <button id="logout-btn" onclick="logout()" style="display:none;">Logout</button>
+        <div id="user-info" style="display:none;"></div>
+    </div>
+    <textarea id="comment-input" placeholder="Type your comment here..."></textarea><br>
+    <button id="post-comment-btn" onclick="postComment()">Post Comment</button>
+    <div id="error-message"></div>
+    <div id="success-message">Comment successfully posted!</div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script>
+    // Initialize Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyCkspIIUM-efZV11dn81hBIS5RdcjsNYYk",
+        authDomain: "contactform-c4a4e.firebaseapp.com",
+        databaseURL: "https://contactform-c4a4e-default-rtdb.firebaseio.com",
+        projectId: "contactform-c4a4e",
+        storageBucket: "contactform-c4a4e.appspot.com",
+        messagingSenderId: "486536765007",
+        appId: "1:486536765007:web:734d6d0b4638432087543a"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    const auth = firebase.auth();
+    const database = firebase.database();
+
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            document.getElementById('login-btn').style.display = 'none';
+            document.getElementById('logout-btn').style.display = 'inline-block';
+            document.getElementById('user-info').style.display = 'block';
+            document.getElementById('user-info').innerText = `Logged in as ${user.displayName}`;
+        } else {
+            document.getElementById('login-btn').style.display = 'inline-block';
+            document.getElementById('logout-btn').style.display = 'none';
+            document.getElementById('user-info').style.display = 'none';
+        }
+    });
+
+    function redirectToLogin() {
+        window.location.href = "login.html";
+    }
+
+    function logout() {
+        auth.signOut().then(() => {
+            window.location.href = "index.html";
+        });
+    }
+
+    function postComment() {
+        const user = auth.currentUser;
+        if (!user) {
+            document.getElementById('error-message').innerText = 'You must be logged in to post a comment.';
+            document.getElementById('error-message').style.display = 'block';
+            return;
+        }
+
+        const comment = document.getElementById('comment-input').value;
+        if (comment.trim() === "") {
+            document.getElementById('error-message').innerText = 'Comment cannot be empty.';
+            document.getElementById('error-message').style.display = 'block';
+            return;
+        }
+
+        const date = new Date().toLocaleString();
+        database.ref("Spotify").push().set({
+            name: user.displayName,
+            email: user.email,
+            text: comment,
+            date: date
+        });
+
+        document.getElementById('comment-input').value = ""; // Clear comment input field after posting comment
+        document.getElementById('success-message').style.display = 'block'; // Display success message
+        setTimeout(() => {
+            document.getElementById('success-message').style.display = 'none';
+        }, 5000);
+    }
+
+    // Display comments
+    database.ref("Spotify").on("child_added", function(snapshot) {
+        const commentData = snapshot.val();
+        const commentElement = document.createElement("div");
+        commentElement.classList.add("comment");
+        commentElement.innerHTML = `<p><em>${commentData.date}</em></p><p><strong>${commentData.name}</strong></p><p>${commentData.text}</p>`;
+        document.getElementById("comments-container").appendChild(commentElement);
+    });
+
+    // Set greeting based on time of day
+    function setGreeting() {
+        const today = new Date();
+        const hour = today.getHours();
+        const greeting = hour < 12 ? "Good morning!" : hour < 18 ? "Good afternoon!" : "Good evening!";
+        document.getElementById("greeting").innerText = greeting;
+    }
+
+    // Call setGreeting function on page load
+    setGreeting();
+</script>
+</body>
+</html>
+
